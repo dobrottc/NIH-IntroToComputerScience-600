@@ -302,8 +302,14 @@ def apply_shifts(text, shifts):
     >>> apply_shifts("Do Androids Dream of Electric Sheep?", [(0,6), (3, 18), (12, 16)])
     'JufYkaolfapxQdrnzmasmRyrpfdvpmEurrb?'
     """
-    ### TODO.
+    new_textL = list(text)
+    for (loc,shift) in shifts:
+        subset_text_shiftS = apply_shift("".join(new_textL[loc:]), shift)
+        new_textL[loc:] = list(subset_text_shiftS)
+    return("".join(new_textL))
 
+
+    
 ###OPTIONAL BELOW
 
 # Problem 4: Multi-level decryption.
