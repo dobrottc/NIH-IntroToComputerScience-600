@@ -120,8 +120,18 @@ def build_coder(shift):
     'v': 'y', 'y': 'a', 'x': ' ', 'z': 'b'}
     (The order of the key-value pairs may be different.)
     """
-    ### TODO.
-
+    lower_letterS = 'abcdefghijklmnopqrstuvwxyz '
+    upper_letterS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ '
+    coder = {}
+    nLets = len(lower_letterS)
+    assert (len(upper_letterS) == nLets), 'bug'
+    for (iLet,tLet) in enumerate(lower_letterS):
+        coder[tLet] = lower_letterS[(iLet+shift) % nLets]
+    for (iLet,tLet) in enumerate(upper_letterS):
+        if tLet == ' ': continue  # let space be handled by lowercase
+        coder[tLet] = upper_letterS[(iLet+shift) % nLets]
+    return coder
+    
 def build_encoder(shift):
     """
     Returns a dict that can be used to encode a plain text. For example, you
@@ -149,7 +159,9 @@ def build_encoder(shift):
 
     HINT : Use build_coder.
     """
-    ### TODO.
+    if shift < 0 or shift >= 27:
+        raise ValueError('bad shift value: %d' % shift)
+    return(build_coder(shift))
 
 def build_decoder(shift):
     """
@@ -179,7 +191,9 @@ def build_decoder(shift):
 
     HINT : Use build_coder.
     """
-    ### TODO.
+    if shift < 0 or shift >= 27:
+        raise ValueError('bad shift value: %d' % shift)
+    return(build_coder(-shift))
  
 
 def apply_coder(text, coder):
@@ -196,8 +210,16 @@ def apply_coder(text, coder):
     >>> apply_coder("Khoor,czruog!", build_decoder(3))
     'Hello, world!'
     """
-    ### TODO.
-  
+    new_text = ''
+    for tLet in text:
+        if tLet in coder.keys():
+            new_let = coder[tLet]
+        else:
+            new_let = tLet
+        new_text = new_text + new_let
+    return new_text
+
+    
 
 def apply_shift(text, shift):
     """
@@ -216,7 +238,8 @@ def apply_shift(text, shift):
     >>> apply_shift('This is a test.', 8)
     'Apq hq hiham a.'
     """
-    ### TODO.
+    return apply_coder(text, build_encoder(shift))
+
    
 #
 # Problem 2: Codebreaking.
@@ -237,7 +260,28 @@ def find_best_shift(wordlist, text):
     >>> apply_coder(s, build_decoder(8)) returns
     'Hello, world!'
     """
-    ### TODO
+    word_set = set(wordlist)     # cheat a bit with this
+    nfoundL = [None]*27
+    bad_chars = ',!.;:'
+    for (iShift,tShift) in enumerate(range(0,27)):
+        new_text = apply_coder(text, build_decoder(tShift))
+        # remove punctuation
+        for c in bad_chars:
+            new_text = new_text.replace(c, '')
+        new_words = new_text.split()
+        nFound = 0
+        for tWord in new_words:
+            if tWord in wordlist:
+                nFound += 1
+        nfoundL[iShift] = nFound
+
+    # best shift
+    import numpy as np
+    best_shift = np.argmax(nfoundL)
+    return best_shift
+
+    
+        
    
 #
 # Problem 3: Multi-level encryption.
