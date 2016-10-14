@@ -69,15 +69,16 @@ class Trigger(object):
 
 # TODO: TitleTrigger
 # TODO: SubjectTrigger
+
 # TODO: SummaryTrigger
 
 
-# Composite Triggers
-# Problems 6-8
-
-# TODO: NotTrigger
-# TODO: AndTrigger
-# TODO: OrTrigger
-
-
-
+# TODO: filter_stories
+def filter_stories(stories, triggerlist):
+    """Take a list of triggers, apply them to the stories, and return a list where each 
+    element corresponds to a story that matches at least one trigger (OR the triggers).
+    Each element of the output list should be a string containing the story title and story
+    summary separated by a colon: i.e. format:
+    story.title: story.summary
+    """
+    ## Write the code here
