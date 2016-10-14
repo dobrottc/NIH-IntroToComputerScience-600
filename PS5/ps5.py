@@ -94,11 +94,11 @@ class WordTrigger(Trigger):
             return False
     
 
-
 # TODO: TitleTrigger
 class TitleTrigger(WordTrigger):
     def evaluate(self, story):
         return self.is_word_in(story.title.lower())
+
 # TODO: SubjectTrigger
 class SubjectTrigger(WordTrigger):
     def evaluate(self, story):
@@ -110,6 +110,7 @@ class SummaryTrigger(WordTrigger):
         return self.is_word_in(story.summary.lower())
 
 
+# Filter stories: Problem 6
 # TODO: filter_stories
 def filter_stories(stories, triggerlist):
     """Take a list of triggers, apply them to the stories, and return a list where each 
