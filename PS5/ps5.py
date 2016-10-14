@@ -66,13 +66,14 @@ class Trigger(object):
 
 # TODO: WordTrigger
 
-
 # TODO: TitleTrigger
+
 # TODO: SubjectTrigger
 
 # TODO: SummaryTrigger
 
 
+# Filter stories: Problem 6
 # TODO: filter_stories
 def filter_stories(stories, triggerlist):
     """Take a list of triggers, apply them to the stories, and return a list where each 
