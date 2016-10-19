@@ -54,6 +54,7 @@ class RectangularRoom(object):
     A room has a width and a height and contains (width * height) tiles. At any
     particular time, each of these tiles is either clean or dirty.
     """
+    roomBinA = None
     def __init__(self, width, height):
         """
         Initializes a rectangular room with the specified width and height.
@@ -63,7 +64,9 @@ class RectangularRoom(object):
         width: an integer > 0
         height: an integer > 0
         """
-        raise NotImplementedError
+        self.roomBinA = np.zeros((width,height))
+        self.width = width
+        self.height = height
     
     def cleanTileAtPosition(self, pos):
         """
@@ -73,7 +76,7 @@ class RectangularRoom(object):
 
         pos: a Position
         """
-        raise NotImplementedError
+        self.roomBinA[int(pos.x), int(pos.y)] = 1
 
     def isTileCleaned(self, m, n):
         """
@@ -85,7 +88,7 @@ class RectangularRoom(object):
         n: an integer
         returns: True if (m, n) is cleaned, False otherwise
         """
-        raise NotImplementedError
+        return bool(self.roomBinA[m,n])
     
     def getNumTiles(self):
         """
@@ -93,7 +96,7 @@ class RectangularRoom(object):
 
         returns: an integer
         """
-        raise NotImplementedError
+        return np.prod(np.shape(self.roomBinA))
 
     def getNumCleanedTiles(self):
         """
@@ -101,7 +104,7 @@ class RectangularRoom(object):
 
         returns: an integer
         """
-        raise NotImplementedError
+        return np.sum(self.roomBinA.ravel()==1)
 
     def getRandomPosition(self):
         """
@@ -109,7 +112,8 @@ class RectangularRoom(object):
 
         returns: a Position object.
         """
-        raise NotImplementedError
+        return Position(np.random.rand()*self.width,
+                            np.random.rand()*self.height)
 
     def isPositionInRoom(self, pos):
         """
@@ -118,7 +122,11 @@ class RectangularRoom(object):
         pos: a Position object.
         returns: True if pos is in the room, False otherwise.
         """
-        raise NotImplementedError
+        if ((pos.x >= 0) & (pos.x < self.width)
+            and (pos.y >= 0 ) & (pos.y < self.height)):
+            return True
+        else:
+            return False
 
 
 class Robot(object):
@@ -140,7 +148,11 @@ class Robot(object):
         room:  a RectangularRoom object.
         speed: a float (speed > 0)
         """
-        raise NotImplementedError
+        self.room = room
+        self.speed = speed
+        self.direction = int(np.random.rand()*360)
+        self.pos = room.getRandomPosition()
+        self.room.cleanTileAtPosition(self.pos)
 
     def getRobotPosition(self):
         """
@@ -148,7 +160,7 @@ class Robot(object):
 
         returns: a Position object giving the robot's position.
         """
-        raise NotImplementedError
+        return(self.pos)
     
     def getRobotDirection(self):
         """
@@ -157,7 +169,7 @@ class Robot(object):
         returns: an integer d giving the direction of the robot as an angle in
         degrees, 0 <= d < 360.
         """
-        raise NotImplementedError
+        return(self.direction)
 
     def setRobotPosition(self, position):
         """
@@ -165,7 +177,7 @@ class Robot(object):
 
         position: a Position object.
         """
-        raise NotImplementedError
+        self.pos = position
 
     def setRobotDirection(self, direction):
         """
@@ -173,7 +185,7 @@ class Robot(object):
 
         direction: integer representing an angle in degrees
         """
-        raise NotImplementedError
+        self.direction = direction
 
     def updatePositionAndClean(self):
         """
@@ -195,6 +207,8 @@ class StandardRobot(Robot):
     At each time-step, a StandardRobot attempts to move in its current direction; when
     it hits a wall, it chooses a new direction randomly.
     """
+
+
     def updatePositionAndClean(self):
         """
         Simulate the passage of a single time-step.
@@ -202,7 +216,22 @@ class StandardRobot(Robot):
         Move the robot to a new position and mark the tile it is on as having
         been cleaned.
         """
-        raise NotImplementedError
+
+        while True:
+            newPos = self.pos.getNewPosition(self.direction, self.speed)
+            if self.room.isPositionInRoom(newPos):
+                break
+            else:
+                self.direction = int(np.random.rand()*360)
+                continue
+        # now we know newPos is in the room, and we have a good direction, brute force all points
+        for (iS,tS) in enumerate(np.linspace(0,self.speed,100)):
+            tempPos = self.pos.getNewPosition(self.direction, tS)
+            self.room.cleanTileAtPosition(tempPos)
+
+        self.pos = newPos
+
+        return
 
 # === Problem 3
 
@@ -224,7 +253,26 @@ def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
     robot_type: class of robot to be instantiated (e.g. Robot or
                 RandomWalkRobot)
     """
-    raise NotImplementedError
+
+    nStepsV = np.zeros((num_trials,))
+    for iT in range(num_trials):
+        room = RectangularRoom(width=width, height=height)
+
+        robotL = []
+        for iL in range(num_robots):
+            robotL.append(robot_type(room, speed))
+
+        tNSteps = 0
+        while True:
+            for (iL, tL) in enumerate(robotL):
+                    tL.updatePositionAndClean()
+            tNSteps = tNSteps + 1
+            coverage = room.getNumCleanedTiles() / room.getNumTiles()
+            if coverage >= min_coverage:
+                break
+        nStepsV[iT] = tNSteps
+    #print('debug: steps each trial: %s' % repr(nStepsV))
+    return (np.mean(nStepsV))
 
 
 # === Problem 4
@@ -232,13 +280,29 @@ def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
 def showPlot1():
     """
     Produces a plot showing dependence of cleaning time on number of robots.
-    """ 
-    raise NotImplementedError
+    """
+
+    robotV = np.arange(1,10)
+    outV = 0.0*robotV.copy()
+    
+    for (iR,tR) in enumerate(robotV):
+        outV[iR] = \
+                   runSimulation(num_robots=tR, speed=2, width=20, height=20, 
+                                     min_coverage=0.8, num_trials=20, robot_type=StandardRobot)
+
+    plt.plot(robotV, outV)
 
 def showPlot2():
     """
     Produces a plot showing dependence of cleaning time on room shape.
     """
-    raise NotImplementedError
 
+    sizeL = [ (20,20), (25,16), (40,10), (50,8), (80,5), (100,4) ]
+    outV = np.zeros((6,1))
+    
+    for (iS,tS) in enumerate(sizeL):
+        outV[iS] = \
+                   runSimulation(num_robots=2, speed=2, width=tS[0], height=tS[1], 
+                                     min_coverage=0.8, num_trials=10, robot_type=StandardRobot)
 
+    plt.plot(outV)
