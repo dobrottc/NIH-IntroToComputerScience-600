@@ -1,13 +1,10 @@
-# Problem Set 6: Simulating robots
-# Name:
-# Collaborators:
-# Time:
-
 import math
 import random
 
 import ps6_visualize
 import pylab
+import numpy as np
+import matplotlib.pyplot as plt
 
 # === Provided classes
 
@@ -184,8 +181,10 @@ class Robot(object):
 
         Move the robot to a new position and mark the tile it is on as having
         been cleaned.
+
+        NOTE: this is an abstract method, do not implement it here!
         """
-        raise NotImplementedError
+        raise NotImplementedError('This is an abstract method, do not call in the Robot class')
 
 
 # === Problem 2
