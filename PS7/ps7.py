@@ -42,7 +42,8 @@ class SimpleVirus(object):
         maxBirthProb: Maximum reproduction probability (a float between 0-1)
         clearProb: Maximum clearance probability (a float between 0-1).
         """
-
+        self.maxBirthProb = maxBirthProb
+        self.clearProb = clearProb
         # TODO
 
     def doesClear(self):
@@ -51,8 +52,7 @@ class SimpleVirus(object):
         returns: True with probability self.clearProb and otherwise returns
         False.
         """
-
-        # TODO
+        return (np.random.random() < self.clearProb)
 
     def reproduce(self, popDensity):
         """
@@ -73,8 +73,13 @@ class SimpleVirus(object):
         maxBirthProb and clearProb values as this virus. Raises a
         NoChildException if this virus particle does not reproduce.
         """
+        doNew = np.random.random() < (self.maxBirthProb * (1-popDensity))
+        if doNew:
+            newV = SimpleVirus(self.maxBirthProb, self.clearProb)
+            return newV
+        else:
+            raise(NoChildException)
 
-        # TODO
 
 
 class SimplePatient(object):
@@ -94,16 +99,16 @@ class SimplePatient(object):
 
         maxPop: the  maximum virus population for this patient (an integer)
         """
-
-        # TODO
+        self.viruses = viruses
+        self.maxPop = maxPop
 
     def getTotalPop(self):
         """
         Gets the current total virus population.
         returns: The total virus population (an integer)
         """
+        return(len(self.viruses))
 
-        # TODO
 
     def update(self):
         """
@@ -120,8 +125,24 @@ class SimplePatient(object):
         returns: The total virus population at the end of the update (an
         integer)
         """
+        notClearVL = []
+        for (iV,tV) in enumerate(self.viruses):
+            if not tV.doesClear():
+                notClearVL.append(tV)
+        popDensity = len(notClearVL) / self.maxPop
+        finalVL = []
+        for (iV,tV) in enumerate(notClearVL):
+            finalVL.append(tV)  # add parent
+            try:
+                outV = tV.reproduce(popDensity)
+                finalVL.append(outV)
+            except NoChildException:
+                pass
+        self.viruses = finalVL
+        return(self.getTotalPop())
 
-        # TODO
+            
+
 
 
 #
@@ -135,4 +156,15 @@ def simulationWithoutDrug():
     total virus population as a function of time.
     """
 
-    # TODO
+    startVirus = []
+    for iV in range(nViruses):
+        startVirus.append(SimpleVirus(maxBirthProb, clearProb))
+    sp = SimplePatient(startVirus, maxPop)
+    totalPopV = np.zeros((nTimesteps+1,))*np.nan
+    totalPopV[0] = sp.getTotalPop()
+    for iR in range(nTimesteps):
+        sp.update()
+        totalPopV[iR+1] = sp.getTotalPop()
+    return totalPopV
+        
+
