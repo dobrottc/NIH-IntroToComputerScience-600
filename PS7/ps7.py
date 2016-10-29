@@ -3,7 +3,7 @@
 # Collaborators:
 # Time:
 
-import numpy
+import numpy as np
 import random
 import pylab
 import matplotlib.pyplot as plt
@@ -85,7 +85,6 @@ class SimplePatient(object):
 
     def __init__(self, viruses, maxPop):
         """
-
         Initialization function, saves the viruses and maxPop parameters as
         attributes.
 
@@ -127,12 +126,18 @@ class SimplePatient(object):
 #
 # PROBLEM 2
 #
-def simulationWithoutDrug():
+def simulationWithoutDrug(nViruses=100, maxPop=1000,
+                          nTimesteps=None, maxBirthProb=None, clearProb=None):
     """
     Run the simulation and plot the graph for problem 2 (no drugs are used,
     viruses do not have any drug resistance).
-    Instantiates a patient, runs a simulation for 300 timesteps, and plots the
+    Instantiates a patient, runs a simulation for 300 timesteps, and returns the
     total virus population as a function of time.
+
+    Returns: totalPopV:  a numpy vector of size (nTimesteps+1,).  First element is starting pop size, and 
+    each element is the virus totalPop at  each subsequent time step.
+
+    Plot results using notebook cells in PS7 Notebook.
     """
 
     # TODO
